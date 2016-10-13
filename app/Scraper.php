@@ -11,7 +11,7 @@ class Scraper {
      */
     protected $client;
 
-    function __construct() {
+    public function __construct() {
         $this->client = new Client();
     }
     
@@ -21,7 +21,7 @@ class Scraper {
      * @param string $listingUrl The url of the listing page
      * @return Collection Urls in a collection
      */
-    function scrapeProdUrlsFromListing($listingUrl) {
+    public function scrapeProdUrlsFromListing($listingUrl) {
         $crawler = $this->client->request('GET', $listingUrl);
         $prodUrls = $crawler->filter('.productInfo > h3 > a')->extract(array('href'));
         
@@ -29,14 +29,26 @@ class Scraper {
     }
 
 
+    /**
+     * Scrape a products data from its URL
+     *
+     * @param string $url The url of the product page
+     * @return array<string> The product title, unit_price and description in an array
+     **/
     public function scrapeProduct($url) {
         $crawler = $this->client->request('GET', $url);
-        //var_dump($this->client->getResponse()->getContent());
+        
         return $this->parseProductInfo($crawler);
     }
 
 
-    public function parseProductInfo($crawler) {
+    /**
+     * Parse a products info from the Dom Crawler object loaded with html
+     *
+     * @param DomCrawler $crawler A Dom crawler loaded with html content
+     * @return array<string> The product title, unit_price and description in an array
+     **/
+    protected function parseProductInfo($crawler) {
         $rawPrice = $crawler->filter('.productSummary .pricing > .pricePerUnit')->first()->text();
         $rawTitle = $crawler->filter('.productSummary .productTitleDescriptionContainer > h1')->first()->text();
         $rawDescription = $crawler->filter('.productDataItemHeader:first-child + .productText')->first()->text();
@@ -51,6 +63,11 @@ class Scraper {
     }
 
 
+    /**
+     * Return the length in kb of the last page request
+     *
+     * @return string The length in kb of the previous scraped page
+     */
     public function getResponseContentLength() {
         $contentLength = round($this->client->getResponse()->getHeader("Content-Length", true)/1024, 2);
     
@@ -63,18 +80,30 @@ class Scraper {
     * @return bool | float False on failure. The price on success.
     *
     */
-    public function parsePrice($price) {
+    protected function parsePrice($price) {
         $pricePattern = "/[0-9]+\.[0-9]{2}/";
         preg_match($pricePattern, $price, $matches);
 
         return !empty($matches) ? $matches[0] : false;
     }
 
-    public function parseTitle($title) {
+    /**
+     * Decode any html entities and trim the raw title
+     *
+     * @param string $title The raw title
+     * @return string The cleaned title
+     */
+    protected function parseTitle($title) {
         return trim(html_entity_decode($title));
     }
 
-    public function parseDescription($description) {
-        return trim($description);
+    /**
+     * Parse the raw description, decodes html and trims whitespace
+     *
+     * @param string $description The raw description
+     * @return string The parsed description
+     **/
+    protected function parseDescription($description) {
+        return trim(html_entity_decode($description));
     }
 }

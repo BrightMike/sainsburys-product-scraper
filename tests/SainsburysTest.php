@@ -11,12 +11,24 @@ class SainsburysTest extends TestCase {
     * @return void
     */
     public function testParsePrice() {
+        $class = new ReflectionClass(App\Scraper::class);
+        $method = $class->getMethod('parsePrice');
+        $method->setAccessible(true);
+        
         $scraper = new App\Scraper();
         
-        $this->assertEquals(1.80, $scraper->parsePrice("£1.80/unit"));
+        $this->assertEquals(1.80, $method->invokeArgs($scraper, array("£1.80/unit")));
     }
 
+    /**
+     * Test that all details can be parsed from the raw html of a product
+     *
+     **/
     public function testParseProductInfo() {
+        $class = new ReflectionClass(App\Scraper::class);
+        $method = $class->getMethod('parseProductInfo');
+        $method->setAccessible(true);
+
         $scraper = new App\Scraper();
         $crawler = new Crawler('<div class="productSummary">
             <div class="productTitleDescriptionContainer"><h1>Sainsbury\'s Avocado, Ripe &amp; Ready x2</h1></div>
@@ -29,6 +41,6 @@ class SainsburysTest extends TestCase {
             "description" => "Avocados"
         ];
 
-        $this->assertEquals($expected, $scraper->parseProductInfo($crawler));
+        $this->assertEquals($expected, $method->invokeArgs($scraper, array($crawler)));
     }
 }
