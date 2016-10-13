@@ -3,11 +3,14 @@ Scraper for Sainsburys products.
 
 ## Installation
 Clone this repository locally
+
 Run composer Installation from the root directory
+
 `composer install`
 
 ## Usage
 Run unit tests
+
 `phpunit`
 
 Run the console application
